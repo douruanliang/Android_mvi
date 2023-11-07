@@ -1,0 +1,19 @@
+Index: README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># AndroidMVIDemo\nAndroid的MVI架构的小Demo例子\n\n2022-06-15 加入折叠屏开发例子，使用传感器获取铰链折叠角度\n2022-06-19 加入JetPack中Windows Manager获取折叠状态\n2022-06-26 使用MotionLayout实现折叠状态中动态变化布局效果
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/README.md b/README.md
+--- a/README.md	(revision 8081ab156fc270df131cd5025173b9d7e3aaf621)
++++ b/README.md	(date 1699325973665)
+@@ -1,6 +1,2 @@
+ # AndroidMVIDemo
+-Android的MVI架构的小Demo例子
+-
+-2022-06-15 加入折叠屏开发例子，使用传感器获取铰链折叠角度
+-2022-06-19 加入JetPack中Windows Manager获取折叠状态
+-2022-06-26 使用MotionLayout实现折叠状态中动态变化布局效果
+\ No newline at end of file
++Android的MVI架构的Demo例子
