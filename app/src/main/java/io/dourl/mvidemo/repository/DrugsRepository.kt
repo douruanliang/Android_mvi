@@ -9,7 +9,6 @@ import io.dourl.mvidemo.bean.CDrugs
  * 功能模块说明：
  */
 class DrugsRepository {
-
     //生成数据
     fun createDrugs(): MutableList<CDrugs> {
         val drugslist = mutableListOf<CDrugs>()

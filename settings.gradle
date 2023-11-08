@@ -28,4 +28,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "MVIDemo"
 include ':app'
-include ':app:lib_base'
+include ':lib_base'

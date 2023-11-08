@@ -5,28 +5,32 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.launch
+import com.example.lib_base.db.AppDatabase
+import com.example.lib_base.db.UserRepository
+import com.example.lib_base.viewmodel.UserViewModel
 import io.dourl.mvidemo.R
 import io.dourl.mvidemo.bean.CDrugs
 import io.dourl.mvidemo.ui.adapter.DrugsAdapter
 import io.dourl.mvidemo.ui.intent.ActionIntent
 import io.dourl.mvidemo.ui.intent.ActionState
 import io.dourl.mvidemo.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.flow.SharingStarted.Companion.Lazily
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.launch
+import com.example.lib_base.viewmodel.UserViewModelFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,12 +40,13 @@ class MainActivity : AppCompatActivity() {
     private val btncreate: Button by lazy { findViewById(R.id.btncreate) }
     private val btnadd: Button by lazy { findViewById(R.id.btnadd) }
     private val btndel: Button by lazy { findViewById(R.id.btndel) }
-    private val tvmsg:TextView by lazy { findViewById(R.id.tv_Msg) }
+    private val tvmsg: TextView by lazy { findViewById(R.id.tv_Msg) }
 
     private lateinit var mainViewModel: MainViewModel
     private lateinit var drugsAdapter: DrugsAdapter
 
-
+    private lateinit var userRepository: UserRepository
+    private lateinit var userViewModel: UserViewModel
     //adapter的位置
     private var adapterpos = -1
 
@@ -89,12 +94,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-    val shareFlow = flowOf(1,2,3,4).shareIn(
+    val shareFlow = flowOf(1, 2, 3, 4).shareIn(
         scope = lifecycleScope,
         started = Lazily,
         replay = 0
-        )
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,15 +125,30 @@ class MainActivity : AppCompatActivity() {
         //初始化ViewModel监听
         observeViewModel()
 
+        userRepository = UserRepository(AppDatabase.getInstance(this))
+
+        val  factory = UserViewModelFactory(userRepository)
+
+        userViewModel = ViewModelProvider(this,factory).get(UserViewModel::class.java)
+
+
         btncreate.setOnClickListener {
             lifecycleScope.launch {
                 mainViewModel.actionIntent.send(ActionIntent.LoadDrugs)
+            }
+
+            lifecycleScope.launch {
+                userViewModel.getBooksByUser()
             }
         }
 
         btnadd.setOnClickListener {
             lifecycleScope.launch {
                 mainViewModel.actionIntent.send(ActionIntent.InsDrugs)
+            }
+
+            lifecycleScope.launch {
+               userViewModel.insert()
             }
         }
 
@@ -143,7 +162,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 mainViewModel.actionIntent.send(ActionIntent.DelDrugs(adapterpos, item))
             }
+            lifecycleScope.launch {
+                userViewModel.deleteUserWithId()
+            }
+
         }
+
     }
 
     private fun observeViewModel() {
@@ -157,18 +181,22 @@ class MainActivity : AppCompatActivity() {
                             btndel.isEnabled = true
                             tvmsg.text = ""
                         }
+
                         is ActionState.Loading -> {
                             btncreate.isEnabled = false
                             btncreate.isEnabled = false
                             btncreate.isEnabled = false
                         }
+
                         is ActionState.Drugs -> {
                             drugsAdapter.setList(it.drugs)
 //                            drugsAdapter.setNewInstance(it.drugs)
                         }
+
                         is ActionState.Error -> {
                             Toast.makeText(this@MainActivity, it.msg, Toast.LENGTH_SHORT).show()
                         }
+
                         is ActionState.Info -> {
                             tvmsg.append("${it.msg}\r\n")
                         }
@@ -178,13 +206,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            shareFlow.collect{
+            shareFlow.collect {
                 Log.i("豆", "shared-value->$it")
             }
         }
 
-      //  mainViewModel.searchShareFlow.
-       //  mainViewModel.searchStateFlow.value
+        //  mainViewModel.searchShareFlow.
+        //  mainViewModel.searchStateFlow.value
+
+
     }
 
 
